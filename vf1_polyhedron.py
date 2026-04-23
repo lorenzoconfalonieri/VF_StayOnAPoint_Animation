@@ -2,7 +2,7 @@
 Visualization of the polyhedral approximation used in §22.3.1 (VF1 — "Stay on a Point")
 of Li, Kapoor & Taylor, "Telerobot Control by Virtual Fixtures for Surgical Applications."
 
-The ideal constraint    ‖δ_p + Δx_p‖² ≤ ε₁     (eq. 22.7)
+The ideal constraint    ‖δ_p + Δx_p‖ ≤ ε₁      (eq. 22.7)
 keeps the task-frame position inside a sphere of radius ε₁ around the target x_p^d.
 To stay in an LP/QP, the sphere is replaced by the intersection of n·m half-spaces
     n̂_{ij} · (δ_p + Δx_p) ≤ ε₁                (eq. 22.8)
@@ -138,7 +138,7 @@ class VF1Polyhedron(ThreeDScene):
 
         title = Text("VF1 — Stay on a Point", font_size=32).to_corner(UL)
         eq = MathTex(r"\|", r"\delta_p", r"+", r"\Delta x_p",
-                     r"\|^2 \le \varepsilon_1", r"\;(n{=}12,\,m{=}12)"
+                     r"\| \le \varepsilon_1", r"\;(n{=}12,\,m{=}12)"
                      ).scale(0.7).to_corner(UR)
         eq[1].set_color(ORANGE)
         eq[3].set_color(GREEN)
@@ -154,7 +154,7 @@ class VF1Polyhedron(ThreeDScene):
 
         # full rotation so the viewer sees the 3D vectors from all angles
         self.begin_ambient_camera_rotation(rate=0.25)
-        self.wait(4)   # ~one full revolution at rate=0.25 (2π/0.25 ≈ 25s, so ~90° sweep in 4s looks good)
+        self.wait(4)   # ~one full revolution at rate=0.25 (2π/0.25 ≈ 25s, so ~57° sweep in 4s looks good)
         self.stop_ambient_camera_rotation()
 
         # labels fade in now that the viewer knows what the vectors are
@@ -300,9 +300,10 @@ class VF1HalfSpace(ThreeDScene):
 
 class VF1VaryNM(ThreeDScene):
     def construct(self):
-        # Warm the geometry cache for all configs upfront (scipy runs here, not mid-animation).
+        # Warm _poly_cache for all configs upfront so scipy doesn't run mid-animation.
         for cfg in [(3,4),(4,4),(6,4),(10,4),(4,3),(4,6),(4,10),(6,6),(8,8),(12,12)]:
-            polyhedron_vertices_faces(*cfg)
+            verts, faces = polyhedron_vertices_faces(*cfg)
+            _poly_cache[cfg + (EPS,)] = (verts, faces)
 
         self.set_camera_orientation(phi=65*DEGREES, theta=35*DEGREES, zoom=0.95)
         self.add(_axes(), _sphere())
