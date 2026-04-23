@@ -1,0 +1,19 @@
+# Manim render output
+media/
+
+# Render logs
+render_*.log
+
+# Python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Copyrighted paper and extracted text (not for redistribution)
+*.pdf
+chapter.txt
+
+# Claude Code internal files
+.claude/
