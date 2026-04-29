@@ -7,8 +7,8 @@ keeps the task-frame position inside a sphere of radius ε₁ around the target 
 To stay in an LP/QP, the sphere is replaced by the intersection of n·m half-spaces
     n̂_{ij} · (δ_p + Δx_p) ≤ ε₁                (eq. 22.8)
 whose outward normals sample the unit sphere via two angle grids:
-    α_i = i·2π/n,   i = 0 … n-1   (latitude-like)
-    β_j = j·2π/m,   j = 0 … m-1   (longitude)
+    α_i = (i+½)·π/n − π/2,   i = 0 … n-1   (elevation: south pole → north pole)
+    β_j = j·2π/m,             j = 0 … m-1   (azimuth)
     n̂_{ij} = (cos α_i cos β_j,  cos α_i sin β_j,  sin α_i)
 
 Render with:
@@ -34,7 +34,7 @@ EPS = 2.0  # ε₁, sphere radius (scaled for visibility)
 
 def face_normals(n: int, m: int) -> np.ndarray:
     """The n·m outward face normals n̂_{ij} from eq. (22.8)."""
-    alpha = np.arange(n) * 2 * np.pi / n
+    alpha = (np.arange(n) + 0.5) * np.pi / n - np.pi / 2
     beta  = np.arange(m) * 2 * np.pi / m
     A, B  = np.meshgrid(alpha, beta, indexing="ij")
     return np.stack([np.cos(A) * np.cos(B),
@@ -175,7 +175,7 @@ class VF1Polyhedron(ThreeDScene):
 class VF1Convergence(ThreeDScene):
     def construct(self):
         # pre-compute all polyhedra so transitions are instant
-        configs = [(3,3), (4,4), (6,6), (8,10), (12,16)]
+        configs = [(3,3), (4,4), (6,6), (8,10), (12,16), (24,24)]
         polys   = {(n,m): make_polyhedron(n, m) for n, m in configs}
 
         self.set_camera_orientation(phi=70*DEGREES, theta=30*DEGREES, zoom=0.95)
@@ -225,7 +225,7 @@ class VF1HalfSpace(ThreeDScene):
 
         n, m = 6, 8
         i, j = 2, 3
-        alpha = i * 2 * np.pi / n
+        alpha = (i + 0.5) * np.pi / n - np.pi / 2
         beta  = j * 2 * np.pi / m
         nhat  = np.array([np.cos(alpha)*np.cos(beta),
                           np.cos(alpha)*np.sin(beta),
@@ -301,7 +301,7 @@ class VF1HalfSpace(ThreeDScene):
 class VF1VaryNM(ThreeDScene):
     def construct(self):
         # Warm _poly_cache for all configs upfront so scipy doesn't run mid-animation.
-        for cfg in [(3,4),(4,4),(6,4),(10,4),(4,3),(4,6),(4,10),(6,6),(8,8),(12,12)]:
+        for cfg in [(3,4),(4,4),(6,4),(10,4),(24,4),(4,3),(4,6),(4,10),(4,24),(6,6),(8,8),(12,12),(24,24)]:
             verts, faces = polyhedron_vertices_faces(*cfg)
             _poly_cache[cfg + (EPS,)] = (verts, faces)
 
@@ -338,7 +338,7 @@ class VF1VaryNM(ThreeDScene):
 
         # Part A: vary n, fix m=4
         rotate_briefly()
-        for n_val in [4, 6, 10]:
+        for n_val in [4, 6, 10, 24]:
             new_poly = make_polyhedron(n_val, 4)
             self.play(FadeTransform(poly, new_poly), run_time=0.9)
             lbl  = swap_lbl(lbl, fr"n={n_val},\ m=4")
@@ -354,7 +354,7 @@ class VF1VaryNM(ThreeDScene):
         poly = new_poly
         rotate_briefly()
 
-        for m_val in [4, 6, 10]:
+        for m_val in [4, 6, 10, 24]:
             new_poly = make_polyhedron(4, m_val)
             self.play(FadeTransform(poly, new_poly), run_time=0.9)
             lbl  = swap_lbl(lbl, fr"n=4,\ m={m_val}")
@@ -364,12 +364,12 @@ class VF1VaryNM(ThreeDScene):
         # Part C: n=m together
         title = swap_title(title, "Vary  n = m  together  →  sphere")
 
-        for k in [6, 8, 12]:
+        for k in [6, 8, 12, 24]:
             new_poly = make_polyhedron(k, k)
             self.play(FadeTransform(poly, new_poly), run_time=0.9)
             lbl  = swap_lbl(lbl, fr"n=m={k}")
             poly = new_poly
-            rotate_briefly(2.5 if k == 12 else 1.5)
+            rotate_briefly(2.5 if k >= 12 else 1.5)
 
         self.begin_ambient_camera_rotation(rate=0.2)
         self.wait(4)

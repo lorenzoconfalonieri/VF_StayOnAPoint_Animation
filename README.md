@@ -18,7 +18,7 @@ $$\hat{n}_{ij} \cdot (\delta_p + \Delta x_p) \leq \varepsilon_1, \quad i=0\ldots
 where the face normals sample the unit sphere on a grid:
 
 $$\hat{n}_{ij} = (\cos\alpha_i\cos\beta_j,\ \cos\alpha_i\sin\beta_j,\ \sin\alpha_i)$$
-$$\alpha_i = \frac{i \cdot 2\pi}{n} \quad \text{(latitude)}, \qquad \beta_j = \frac{j \cdot 2\pi}{m} \quad \text{(longitude)}$$
+$$\alpha_i = \frac{(i+\tfrac{1}{2})\,\pi}{n} - \frac{\pi}{2} \quad \text{(elevation, south} \to \text{north)}, \qquad \beta_j = \frac{j \cdot 2\pi}{m} \quad \text{(azimuth)}$$
 
 Their intersection is a **polyhedron** that circumscribes the sphere and collapses onto it as $n \times m \to \infty$.
 
@@ -38,7 +38,7 @@ Minimum for a **bounded** polyhedron: $3 \times 3$. Minimum for a **symmetric** 
 | Scene | Description |
 |-------|-------------|
 | `VF1Polyhedron` | Target point, error vector $\delta_p$, increment $\Delta x_p$, sphere, and the 12×12 polyhedron |
-| `VF1Convergence` | $n \times m$ grows from $3\times3$ to $12\times16$ — polyhedron collapses onto sphere |
+| `VF1Convergence` | $n \times m$ grows from $3\times3$ to $24\times24$ — polyhedron collapses onto sphere |
 | `VF1HalfSpace` | Full polyhedron first, then a single half-space face with outward normal $\hat{n}_{ij}$ |
 | `VF1VaryNM` | Vary $n$ alone (fix $m=4$), then $m$ alone (fix $n=4$), then $n=m$ together |
 
